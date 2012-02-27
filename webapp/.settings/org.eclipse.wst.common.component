@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="shop-admin-webapp">
+        <wb-resource deploy-path="/" source-path="/src/main/webapp"/>
+        <dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/shop-admin-java/shop-admin-java">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/shop-admin-flex/shop-admin-flex">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="context-root" value="shop-admin-webapp"/>
+        <property name="java-output-path" value="/shop-admin-webapp/target/classes"/>
+    </wb-module>
+</project-modules>

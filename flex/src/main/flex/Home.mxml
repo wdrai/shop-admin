@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+  for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<s:VGroup
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+    xmlns:v="org.granite.validation.*"
+	xmlns:e="com.wineshop.admin.entities.*"
+    xmlns="*"
+    width="100%" height="100%">
+
+	<fx:Metadata>[Name]</fx:Metadata>
+   	
+    <fx:Script>
+        <![CDATA[
+			import com.wineshop.admin.entities.Domaine;
+			import com.wineshop.admin.entities.Vin$Type;
+			import com.wineshop.admin.entities.Welcome;
+			import com.wineshop.admin.services.DomaineService;
+			import com.wineshop.admin.services.WelcomeService;
+			
+			import mx.collections.ArrayCollection;
+			
+			import org.granite.tide.events.TideFaultEvent;
+			import org.granite.tide.events.TideResultEvent;
+			import org.granite.tide.spring.PagedQuery;
+			import org.granite.tide.spring.Spring;
+			
+			Spring.getInstance().addComponentWithFactory("domaines", PagedQuery, 
+				{ filterClass: Domaine, elementClass: Domaine, remoteComponentClass: DomaineService, methodName: "liste", maxResults: 12 }
+			);
+            
+			[In] [Bindable]
+			public var domaines:PagedQuery;
+			
+			[Bindable]
+			public var domaine:Domaine = new Domaine();
+			
+			[Inject]
+			public var domaineService:DomaineService;
+			
+			
+			private function sauve():void {
+				domaineService.sauve(domaine, sauveResult);
+			}
+			
+			private function sauveResult(event:TideResultEvent):void {
+				listeDomaines.selectedItem = null;
+				this.domaine = new Domaine();
+				currentState = 'create';
+			}
+			
+			private function modifie():void {
+				this.domaine = Domaine(listeDomaines.selectedItem);
+				currentState = 'edit';
+			}
+			
+			private function annule():void {
+				listeDomaines.selectedItem = null;
+				this.domaine = new Domaine();
+				currentState = 'create';
+			}
+			
+			private function supprime():void {
+				domaineService.supprime(domaine.id, supprimeResult);
+			}
+			
+			private function supprimeResult(event:TideResultEvent):void {
+				listeDomaines.selectedItem = null;
+				this.domaine = new Domaine();
+				currentState = "create";
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:ArrayCollection id="typesVins" source="{Vin$Type.constants}"/>
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="create"/>
+		<s:State name="edit"/>
+	</s:states>
+	
+	<s:VGroup paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" width="800">
+		<s:HGroup id="filtre">
+			<s:TextInput id="filtreNom" text="@{domaines.filter.nom}"/>
+			<s:Button id="rechercher" label="Rechercher" click="domaines.refresh()"/>
+		</s:HGroup>
+		
+		<s:List id="listeDomaines" labelField="nom" width="100%" height="200" change="modifie()">
+			<s:dataProvider><s:AsyncListView list="{domaines}"/></s:dataProvider>
+		</s:List>
+	</s:VGroup>
+	
+	<s:VGroup paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" width="800">
+		<mx:Form id="formDomaine">
+			<mx:FormHeading label.create="Créer domaine" label.edit="Editer domaine"/>
+			<mx:FormItem label="Nom">
+				<s:TextInput id="formNom" text="@{domaine.nom}"/>
+			</mx:FormItem>
+			<mx:FormItem>
+				<s:HGroup>
+					<s:Button id="sauver" label="Sauver"
+							  click="sauve()"/>					
+					<s:Button id="supprimer" label="Supprimer"
+							  visible.create="false" visible.edit="true"
+							  click="supprime()"/>
+					<s:Button id="annuler" label="Annuler"
+							  visible.create="false" visible.edit="true"
+							  click="annule()"/>
+				</s:HGroup>
+			</mx:FormItem>
+		</mx:Form>
+	</s:VGroup>
+
+</s:VGroup>
