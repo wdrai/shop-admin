@@ -26,15 +26,18 @@ public class Vin extends AbstractEntity {
     private Domaine domaine;
 	
     @Basic
+    @NotNull
     @Size(min=5, max=100, message="Le nom doit contenir entre {min} et {max} car.")
     private String nom;
 
     @Basic
+    @NotNull
     @Min(value=1900, message="L'annee doit être supérieure a {value}")
     @Max(value=2050, message="L'annee doit être inférieure a {value}")
     private Integer annee;
     
     @Enumerated(EnumType.STRING)
+    @NotNull
     private Type type;
 
     
