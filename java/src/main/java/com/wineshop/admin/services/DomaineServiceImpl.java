@@ -7,6 +7,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ public class DomaineServiceImpl implements DomaineService {
     }
     
     @Transactional
+    @Secured("ROLE_ADMIN")
     public void supprime(Long domaineId) {
     	Domaine domaine = entityManager.find(Domaine.class, domaineId);
     	entityManager.remove(domaine);
