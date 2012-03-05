@@ -31,10 +31,16 @@
    	
     <fx:Script>
         <![CDATA[
-            import org.granite.tide.spring.Spring;
-            import org.granite.tide.spring.Identity;
-            import org.granite.tide.service.DefaultServiceInitializer;
-            import org.granite.tide.data.DataObserver;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			
+			import org.granite.tide.data.DataObserver;
+			import org.granite.tide.data.OptimisticLockExceptionHandler;
+			import org.granite.tide.data.events.TideDataConflictsEvent;
+			import org.granite.tide.service.DefaultServiceInitializer;
+			import org.granite.tide.spring.Identity;
+			import org.granite.tide.spring.Spring;
+			import org.granite.tide.validators.ValidatorExceptionHandler;
             
             [Bindable] [Inject]
             public var identity:Identity;
@@ -43,10 +49,32 @@
                 // Define service endpoint resolver
                 Spring.getInstance().getSpringContext().serviceInitializer = new DefaultServiceInitializer('/shop-admin');
 				
+				Spring.getInstance().addExceptionHandler(ValidatorExceptionHandler);
+				Spring.getInstance().addExceptionHandler(OptimisticLockExceptionHandler);
+				
+				Spring.getInstance().addComponent("wineshopTopic", DataObserver);
+				Spring.getInstance().addEventObserver("org.granite.tide.login", "wineshopTopic", "subscribe");
+				Spring.getInstance().addEventObserver("org.granite.tide.logout", "wineshopTopic", "unsubscribe");
+				
+				Spring.getInstance().getSpringContext().addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, 
+					conflictsHandler);
+				
                 // Check current authentication state
                 identity.isLoggedIn();
             }
-            
+
+			private function conflictsHandler(event:TideDataConflictsEvent):void {
+				Alert.show("Quelqu'un a modifie ce domaine en meme temps que vous.\nConserver vos modifications ?", 
+					"Conflit", Alert.YES | Alert.NO, null, function(ce:CloseEvent):void {
+						if (ce.detail == Alert.YES)
+							event.conflicts.acceptAllClient();
+						else
+							event.conflicts.acceptAllServer();
+					}
+				);
+			}
+			
+			
             [Observer("org.granite.tide.login")]
             public function login():void {
                 removeElementAt(0);

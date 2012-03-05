@@ -34,15 +34,19 @@
     <fx:Script>
         <![CDATA[
 			import com.wineshop.admin.entities.Domaine;
+			import com.wineshop.admin.entities.Vin;
 			import com.wineshop.admin.entities.Vin$Type;
 			import com.wineshop.admin.entities.Welcome;
 			import com.wineshop.admin.services.DomaineService;
 			import com.wineshop.admin.services.WelcomeService;
 			
 			import mx.collections.ArrayCollection;
+			import mx.data.utils.Managed;
 			
 			import org.granite.tide.events.TideFaultEvent;
 			import org.granite.tide.events.TideResultEvent;
+			import org.granite.tide.seam.security.Identity;
+			import org.granite.tide.spring.Identity;
 			import org.granite.tide.spring.PagedQuery;
 			import org.granite.tide.spring.Spring;
 			
@@ -59,9 +63,13 @@
 			[Inject]
 			public var domaineService:DomaineService;
 			
+			[In] [Bindable]
+			public var identity:org.granite.tide.spring.Identity;
+			
 			
 			private function sauve():void {
-				domaineService.sauve(domaine, sauveResult);
+				if (domaineValidator.validateEntity())
+					domaineService.sauve(domaine, sauveResult);
 			}
 			
 			private function sauveResult(event:TideResultEvent):void {
@@ -71,12 +79,14 @@
 			}
 			
 			private function modifie():void {
+				Managed.resetEntity(this.domaine);
 				this.domaine = Domaine(listeDomaines.selectedItem);
 				currentState = 'edit';
 			}
 			
 			private function annule():void {
 				listeDomaines.selectedItem = null;
+				Managed.resetEntity(this.domaine);
 				this.domaine = new Domaine();
 				currentState = 'create';
 			}
@@ -95,6 +105,8 @@
 	
 	<fx:Declarations>
 		<s:ArrayCollection id="typesVins" source="{Vin$Type.constants}"/>
+		
+		<v:FormValidator id="domaineValidator" entity="{domaine}" form="{formDomaine}"/>
 	</fx:Declarations>
 	
 	<s:states>
@@ -105,7 +117,7 @@
 	<s:VGroup paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" width="800">
 		<s:HGroup id="filtre">
 			<s:TextInput id="filtreNom" text="@{domaines.filter.nom}"/>
-			<s:Button id="rechercher" label="Rechercher" click="domaines.refresh()"/>
+			<s:Button id="rechercher" label="Rechercher" click="domaines.fullRefresh()"/>
 		</s:HGroup>
 		
 		<s:List id="listeDomaines" labelField="nom" width="100%" height="200" change="modifie()">
@@ -119,11 +131,41 @@
 			<mx:FormItem label="Nom">
 				<s:TextInput id="formNom" text="@{domaine.nom}"/>
 			</mx:FormItem>
+			<mx:FormItem label="Vins">
+				<s:HGroup gap="10">
+					<s:List id="formVins" dataProvider="{domaine.vins}">
+						<s:itemRenderer>
+							<fx:Component>
+								<s:ItemRenderer>
+									<fx:Declarations>
+										<v:FormValidator id="vinValidator" form="{vinEdit}" entity="{data}"/>
+									</fx:Declarations>
+									<s:states>
+										<s:State name="normal"/>
+									</s:states>                   
+									<s:HGroup id="vinEdit">
+										<s:TextInput text="@{data.nom}"/>
+										<s:TextInput text="@{data.annee}"/>
+										<s:DropDownList selectedItem="@{data.type}" requireSelection="true"                                                                                     dataProvider="{outerDocument.typesVins}" labelField="name"/>
+									</s:HGroup>
+								</s:ItemRenderer>							
+							</fx:Component>
+						</s:itemRenderer>					
+					</s:List>				
+					
+					<s:VGroup gap="10">
+						<s:Button label="+" click="domaine.vins.addItem(new Vin(domaine))"/>
+						<s:Button label="-" enabled="{Boolean(formVins.selectedItem)}" 
+								  click="domaine.vins.removeItemAt(formVins.selectedIndex)"/>
+					</s:VGroup>
+				</s:HGroup>
+			</mx:FormItem>
 			<mx:FormItem>
 				<s:HGroup>
 					<s:Button id="sauver" label="Sauver"
 							  click="sauve()"/>					
 					<s:Button id="supprimer" label="Supprimer"
+							  enabled="{identity.ifAllGranted('ROLE_ADMIN')}"
 							  visible.create="false" visible.edit="true"
 							  click="supprime()"/>
 					<s:Button id="annuler" label="Annuler"
