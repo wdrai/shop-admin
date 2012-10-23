@@ -284,9 +284,6 @@ public class Home implements Initializable, ApplicationListener<TideApplicationE
 		});
 		vineyards.setSort(new TableViewSort<Vineyard>(listVineyards, Vineyard.class));
 		
-		textName.textProperty().bindBidirectional(vineyard.nameProperty());
-		textAddress.textProperty().bindBidirectional(vineyard.getAddress().addressProperty());
-		listWines.setItems(vineyard.getWines());
 		listWines.setCellFactory(new Callback<ListView<Wine>, ListCell<Wine>>() {
 			public ListCell<Wine> call(ListView<Wine> listView) {
 				return new WineListCell();

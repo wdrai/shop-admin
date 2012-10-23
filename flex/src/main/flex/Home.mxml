@@ -63,7 +63,7 @@
 			[In] [Bindable]
 			public var vineyards:PagedQuery;
 			
-			[Bindable]
+			[Out] [Bindable]
 			public var vineyard:Vineyard = new Vineyard();
 			
 			[Inject]
@@ -195,7 +195,7 @@
 			</mx:FormItem>
 			<mx:FormItem>
 				<s:HGroup>
-					<s:Button label="Save" enabled="{isNaN(vineyard.id) || tideContext.meta_dirty}"
+					<s:Button label="Save" enabled="{tideContext.meta_dirty}"
 							  click="save()"/>
 					<s:Button label="Remove"
 							  enabled="{identity.ifAllGranted('ROLE_ADMIN')}"
