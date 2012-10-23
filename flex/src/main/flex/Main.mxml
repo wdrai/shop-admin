@@ -24,6 +24,8 @@
 	xmlns:fx="http://ns.adobe.com/mxml/2009"
 	xmlns:s="library://ns.adobe.com/flex/spark"
 	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:gds="org.granite.tide.service.*"
+	xmlns:g="org.granite.rpc.remoting.mxml.*"
     xmlns="*"
     controlBarVisible="{identity.loggedIn}"
     preinitialize="Spring.getInstance().initApplication()"
@@ -33,11 +35,16 @@
         <![CDATA[
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
+			import mx.logging.Log;
+			import mx.logging.targets.TraceTarget;
 			
 			import org.granite.tide.data.DataObserver;
 			import org.granite.tide.data.OptimisticLockExceptionHandler;
 			import org.granite.tide.data.events.TideDataConflictsEvent;
 			import org.granite.tide.service.DefaultServiceInitializer;
+			import org.granite.tide.service.IServiceInitializer;
+			import org.granite.tide.service.NotLoggedInExceptionHandler;
+			import org.granite.tide.service.WebSocketServiceInitializer;
 			import org.granite.tide.spring.Identity;
 			import org.granite.tide.spring.Spring;
 			import org.granite.tide.validators.ValidatorExceptionHandler;
@@ -46,9 +53,16 @@
             public var identity:Identity;
             
             private function init():void {
-                // Define service endpoint resolver
-                Spring.getInstance().getSpringContext().serviceInitializer = new DefaultServiceInitializer('/shop-admin');
+				var t:TraceTarget = new TraceTarget();
+				t.filters = ["org.granite.*"];
+				Log.addTarget(t);				
 				
+                // Define service endpoint resolver
+//				var serviceInitializer:IServiceInitializer = new DefaultServiceInitializer();
+				var serviceInitializer:IServiceInitializer = new WebSocketServiceInitializer();
+                Spring.getInstance().getSpringContext().serviceInitializer = serviceInitializer;
+				
+				Spring.getInstance().addExceptionHandler(NotLoggedInExceptionHandler);
 				Spring.getInstance().addExceptionHandler(ValidatorExceptionHandler);
 				Spring.getInstance().addExceptionHandler(OptimisticLockExceptionHandler);
 				
@@ -56,16 +70,15 @@
 				Spring.getInstance().addEventObserver("org.granite.tide.login", "wineshopTopic", "subscribe");
 				Spring.getInstance().addEventObserver("org.granite.tide.logout", "wineshopTopic", "unsubscribe");
 				
-				Spring.getInstance().getSpringContext().addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, 
-					conflictsHandler);
+				Spring.getInstance().getSpringContext().addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, conflictsHandler);
 				
-                // Check current authentication state
-                identity.isLoggedIn();
-            }
-
+				// Check current authentication state
+				identity.isLoggedIn();
+			}
+			
 			private function conflictsHandler(event:TideDataConflictsEvent):void {
-				Alert.show("Quelqu'un a modifie ce domaine en meme temps que vous.\nConserver vos modifications ?", 
-					"Conflit", Alert.YES | Alert.NO, null, function(ce:CloseEvent):void {
+				Alert.show("Someone has modified this vineyard data at the same time as you.\nKeep your changes ?", 
+					"Conflict", Alert.YES | Alert.NO, null, function(ce:CloseEvent):void {
 						if (ce.detail == Alert.YES)
 							event.conflicts.acceptAllClient();
 						else
@@ -88,12 +101,12 @@
             }
         ]]>
     </fx:Script>
-
+	
     <s:controlBarContent>
-        <s:Label text="GraniteDS Application shop-admin" fontSize="18" fontWeight="bold" width="100%"/>
-        <s:Button label="Logout" click="identity.logout();"/>
+        <s:Label text="GraniteDS Wineshop" fontSize="18" fontWeight="bold" width="100%"/>
+        <s:Button label="Log out" click="identity.logout();"/>
     </s:controlBarContent>
- 
+ 	
     <Login id="loginView"/>
 
 </s:Application>

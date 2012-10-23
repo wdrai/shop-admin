@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<project name="shop-admin-flex" default="generate.as3" basedir=".">	
+
+    <!--
+     ! Generate AS3 classes for entities and services.
+     !-->
+    <target name="define.gas3">
+
+        <echo message="Defining gas3 task..."/>
+        <taskdef name="gas3" classname="org.granite.generator.ant.AntJavaAs3Task">
+        	<classpath>
+        		<fileset dir="C:/Dev/builder/plugins">
+        			<include name="org.granite.builder_3.0.0.SNAPSHOT.jar"/>
+        		</fileset>
+        		<fileset dir="C:/Dev/workspaceseam3/graniteds_builder/lib">
+        			<include name="*.jar"/>
+        		</fileset>
+        	</classpath>
+    	</taskdef>
+    </target>
+	
+    <target name="generate.as3" depends="define.gas3"
+    	description="Generate AS3 beans for example entities">
+
+    	<gas3 outputdir="src/main/flex" baseoutputdir="target/generated-sources" tide="true">
+    		<translator java="com.wineshop.admin" client="com.wineshop.admin.client"/>
+            <classpath>
+                <pathelement location="../java/target/classes"/>
+            	<path path="C:/Users/william/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.0-api/1.0.1.Final/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
+            	<path path="C:/Users/william/.m2/repository/org/graniteds/granite-core/3.0-SNAPSHOT/granite-core-3.0-SNAPSHOT.jar"/>
+            	<path path="C:/Users/william/.m2/repository/org/springframework/data/spring-data-commons-core/1.3.0.RELEASE/spring-data-commons-core-1.3.0.RELEASE.jar"/>
+            	<path path="C:/Users/william/.m2/repository/org/springframework/data/spring-data-jpa/1.1.0.RELEASE/spring-data-jpa-1.1.0.RELEASE.jar"/>
+            </classpath>
+            <fileset dir="../java/target/classes">
+    			<include name="com/wineshop/admin/entities/*.class"/>
+    			<include name="com/wineshop/admin/services/*Service.class"/>
+    			<include name="com/wineshop/admin/services/*Repository.class"/>
+           	</fileset>
+        </gas3>
+    </target>
+
+</project>

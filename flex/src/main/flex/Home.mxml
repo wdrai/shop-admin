@@ -24,8 +24,8 @@
 	xmlns:fx="http://ns.adobe.com/mxml/2009"
 	xmlns:s="library://ns.adobe.com/flex/spark"
 	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:c="org.granite.tide.collections.*"
     xmlns:v="org.granite.validation.*"
-	xmlns:e="com.wineshop.admin.entities.*"
     xmlns="*"
     width="100%" height="100%">
 
@@ -33,80 +33,101 @@
    	
     <fx:Script>
         <![CDATA[
-			import com.wineshop.admin.entities.Domaine;
-			import com.wineshop.admin.entities.Vin;
-			import com.wineshop.admin.entities.Vin$Type;
-			import com.wineshop.admin.entities.Welcome;
-			import com.wineshop.admin.services.DomaineService;
-			import com.wineshop.admin.services.WelcomeService;
+			import com.wineshop.admin.client.entities.Address;
+			import com.wineshop.admin.client.entities.Vineyard;
+			import com.wineshop.admin.client.entities.Wine;
+			import com.wineshop.admin.client.entities.Wine$Type;
+			import com.wineshop.admin.client.services.VineyardRepository;
 			
 			import mx.collections.ArrayCollection;
+			import mx.collections.IList;
 			import mx.data.utils.Managed;
 			
+			import org.granite.tide.Tide;
+			import org.granite.tide.data.model.Page;
+			import org.granite.tide.data.model.PageInfo;
+			import org.granite.tide.data.model.SortInfo;
 			import org.granite.tide.events.TideFaultEvent;
 			import org.granite.tide.events.TideResultEvent;
-			import org.granite.tide.seam.security.Identity;
+			import org.granite.tide.spring.Context;
 			import org.granite.tide.spring.Identity;
 			import org.granite.tide.spring.PagedQuery;
 			import org.granite.tide.spring.Spring;
 			
-			Spring.getInstance().addComponentWithFactory("domaines", PagedQuery, 
-				{ filterClass: Domaine, elementClass: Domaine, remoteComponentClass: DomaineService, methodName: "liste", maxResults: 12 }
+			PageInfo; SortInfo; Page;
+			
+			Spring.getInstance().addComponentWithFactory("vineyards", PagedQuery, 
+				{ filterClass: Vineyard, elementClass: Vineyard, remoteComponentClass: VineyardRepository, methodName: "findByFilter", maxResults: 12 }, false, true, Tide.RESTRICT_YES
 			);
             
 			[In] [Bindable]
-			public var domaines:PagedQuery;
+			public var vineyards:PagedQuery;
 			
 			[Bindable]
-			public var domaine:Domaine = new Domaine();
+			public var vineyard:Vineyard = new Vineyard();
 			
 			[Inject]
-			public var domaineService:DomaineService;
+			public var vineyardRepository:VineyardRepository;
 			
-			[In] [Bindable]
-			public var identity:org.granite.tide.spring.Identity;
+			[Inject] [Bindable]
+			public var identity:Identity;
+			
+			[Inject] [Bindable]
+			public var tideContext:Context;
 			
 			
-			private function sauve():void {
-				if (domaineValidator.validateEntity())
-					domaineService.sauve(domaine, sauveResult);
+			private function save():void {
+				if (vineyardValidator.validateEntity())
+					vineyardRepository.save(vineyard, saveResult);
 			}
 			
-			private function sauveResult(event:TideResultEvent):void {
-				listeDomaines.selectedItem = null;
-				this.domaine = new Domaine();
+			private function saveResult(event:TideResultEvent):void {
+				listVineyards.selectedItem = null;
+				this.vineyard = new Vineyard();
 				currentState = 'create';
 			}
 			
-			private function modifie():void {
-				Managed.resetEntity(this.domaine);
-				this.domaine = Domaine(listeDomaines.selectedItem);
+			private function save100():void {
+				var list:ArrayCollection = new ArrayCollection();
+				for (var i:int = 1; i <= 100; i++) {
+					var vy:Vineyard = new Vineyard();
+					vy.name = "Vineyard " + i;
+					vy.address = new Address();
+					vy.address.address = "Vineyard " + i;
+					list.addItem(vy);
+				}
+				vineyardRepository.save_1(list);
+			}
+			
+			private function modify():void {
+				Managed.resetEntity(this.vineyard);
+				this.vineyard = Vineyard(listVineyards.selectedItem);
 				currentState = 'edit';
 			}
 			
-			private function annule():void {
-				listeDomaines.selectedItem = null;
-				Managed.resetEntity(this.domaine);
-				this.domaine = new Domaine();
+			private function cancel():void {
+				listVineyards.selectedItem = null;
+				Managed.resetEntity(this.vineyard);
+				this.vineyard = new Vineyard();
 				currentState = 'create';
 			}
 			
-			private function supprime():void {
-				domaineService.supprime(domaine.id, supprimeResult);
+			private function remove():void {
+				vineyardRepository.delete_2(vineyard.id, removeResult);
 			}
 			
-			private function supprimeResult(event:TideResultEvent):void {
-				listeDomaines.selectedItem = null;
-				this.domaine = new Domaine();
+			private function removeResult(event:TideResultEvent):void {
+				listVineyards.selectedItem = null;
+				this.vineyard = new Vineyard();
 				currentState = "create";
 			}
 		]]>
 	</fx:Script>
 	
 	<fx:Declarations>
-		<s:ArrayCollection id="typesVins" source="{Vin$Type.constants}"/>
+		<s:ArrayCollection id="wineTypes" source="{Wine$Type.constants}"/>
 		
-		<v:FormValidator id="domaineValidator" entity="{domaine}" form="{formDomaine}"/>
+		<v:FormValidator id="vineyardValidator" entity="{vineyard}" form="{formVineyard}"/>
 	</fx:Declarations>
 	
 	<s:states>
@@ -115,38 +136,50 @@
 	</s:states>
 	
 	<s:VGroup paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" width="800">
-		<s:HGroup id="filtre">
-			<s:TextInput id="filtreNom" text="@{domaines.filter.nom}"/>
-			<s:Button id="rechercher" label="Rechercher" click="domaines.fullRefresh()"/>
+		<s:HGroup id="filter">
+			<s:TextInput id="filterName" text="@{vineyards.filter.name}"/>
+			<!--s:TextInput id="filterAddress" text="@{vineyards.filter.address.address}"/-->
+			<s:Button id="search" label="Search" click="vineyards.fullRefresh()"/>
+			<s:Spacer width="100%"/>
+			<!--s:Button id="initbase" label="Init base" click="sauve100()"/-->
 		</s:HGroup>
 		
-		<s:List id="listeDomaines" labelField="nom" width="100%" height="200" change="modifie()">
-			<s:dataProvider><s:AsyncListView list="{domaines}"/></s:dataProvider>
-		</s:List>
+		<s:DataGrid id="listVineyards" width="100%" height="200" selectionChange="modify()">
+			<s:dataProvider><c:SortableAsyncListView list="{vineyards}"/></s:dataProvider>
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn sortable="true" dataField="name" headerText="Name"/>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
 	</s:VGroup>
 	
 	<s:VGroup paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" width="800">
-		<mx:Form id="formDomaine">
-			<mx:FormHeading label.create="Créer domaine" label.edit="Editer domaine"/>
-			<mx:FormItem label="Nom">
-				<s:TextInput id="formNom" text="@{domaine.nom}"/>
+		<mx:Form id="formVineyard">
+			<mx:FormHeading label.create="Create vineyard" label.edit="Edit vineyard"/>
+			<mx:FormItem label="Name">
+				<s:TextInput id="formName" text="@{vineyard.name}"/>
 			</mx:FormItem>
-			<mx:FormItem label="Vins">
+			<mx:FormItem label="Address">
+				<s:TextInput id="formAddress" text="@{vineyard.address.address}" width="100%"/>
+			</mx:FormItem>
+			<mx:FormItem label="Wines">
 				<s:HGroup gap="10">
-					<s:List id="formVins" dataProvider="{domaine.vins}">
+					<s:List id="formWines" dataProvider="{vineyard.wines}">
 						<s:itemRenderer>
 							<fx:Component>
 								<s:ItemRenderer>
 									<fx:Declarations>
-										<v:FormValidator id="vinValidator" form="{vinEdit}" entity="{data}"/>
+										<v:FormValidator id="wineValidator" form="{wineEdit}" entity="{data}"/>
 									</fx:Declarations>
 									<s:states>
 										<s:State name="normal"/>
 									</s:states>                   
-									<s:HGroup id="vinEdit">
-										<s:TextInput text="@{data.nom}"/>
-										<s:TextInput text="@{data.annee}"/>
-										<s:DropDownList selectedItem="@{data.type}" requireSelection="true"                                                                                     dataProvider="{outerDocument.typesVins}" labelField="name"/>
+									<s:HGroup id="wineEdit">
+										<s:TextInput text="@{data.name}"/>
+										<s:TextInput text="@{data.year}"/>
+										<s:DropDownList selectedItem="@{data.type}" requireSelection="true"                                                                                     
+											dataProvider="{outerDocument.wineTypes}" labelField="name"/>
 									</s:HGroup>
 								</s:ItemRenderer>							
 							</fx:Component>
@@ -154,23 +187,23 @@
 					</s:List>				
 					
 					<s:VGroup gap="10">
-						<s:Button label="+" click="domaine.vins.addItem(new Vin(domaine))"/>
-						<s:Button label="-" enabled="{Boolean(formVins.selectedItem)}" 
-								  click="domaine.vins.removeItemAt(formVins.selectedIndex)"/>
+						<s:Button label="+" click="vineyard.wines.addItem(new Wine(vineyard))"/>
+						<s:Button label="-" enabled="{Boolean(formWines.selectedItem)}" 
+								  click="vineyard.wines.removeItemAt(formWines.selectedIndex)"/>
 					</s:VGroup>
 				</s:HGroup>
 			</mx:FormItem>
 			<mx:FormItem>
 				<s:HGroup>
-					<s:Button id="sauver" label="Sauver"
-							  click="sauve()"/>					
-					<s:Button id="supprimer" label="Supprimer"
+					<s:Button label="Save" enabled="{isNaN(vineyard.id) || tideContext.meta_dirty}"
+							  click="save()"/>
+					<s:Button label="Remove"
 							  enabled="{identity.ifAllGranted('ROLE_ADMIN')}"
 							  visible.create="false" visible.edit="true"
-							  click="supprime()"/>
-					<s:Button id="annuler" label="Annuler"
+							  click="remove()"/>
+					<s:Button label="Cancel"
 							  visible.create="false" visible.edit="true"
-							  click="annule()"/>
+							  click="cancel()"/>
 				</s:HGroup>
 			</mx:FormItem>
 		</mx:Form>

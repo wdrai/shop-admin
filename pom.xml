@@ -26,17 +26,20 @@
     <packaging>pom</packaging>
   
     <properties>
-        <flex.framework.version>4.5.1.21328</flex.framework.version>
-        <flexmojos.version>4.0-RC2</flexmojos.version>
+        <flex.framework.version>4.6.b.23201</flex.framework.version>
+        <flexmojos.version>4.2-beta</flexmojos.version>
+        
+        <javafx.version>2.2</javafx.version>
     
-        <graniteds.version>2.3.1.GA</graniteds.version>
+        <graniteds.version>3.0-SNAPSHOT</graniteds.version>
     
-        <springframework.version>3.0.6.RELEASE</springframework.version>
-        <spring.security.version>3.0.7.RELEASE</spring.security.version>
+        <springframework.version>3.1.2.RELEASE</springframework.version>
+        <spring.security.version>3.1.2.RELEASE</spring.security.version>
+        <springframework.client.version>3.1.2.RELEASE</springframework.client.version>
     
         <hibernate.version>3.6.9.Final</hibernate.version>
         <hibernate.validator.version>4.2.0.Final</hibernate.validator.version>
-    
+        
         <context.root>/shop-admin</context.root>
     </properties>
 
@@ -67,9 +70,11 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
-  <modules>
-    <module>java</module>
-    <module>flex</module>
-    <module>webapp</module>
-  </modules>
+    
+	<modules>
+		<module>java</module>
+	    <module>flex</module>
+	    <module>javafx</module>
+	    <module>webapp</module>
+	</modules>
 </project>

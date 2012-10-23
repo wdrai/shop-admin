@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?language javascript?>
+<?import java.lang.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane id="ConflictPane" prefHeight="200" prefWidth="400" xmlns:fx="http://javafx.com/fxml" fx:controller="com.wineshop.admin.client.Conflict">
+	<top>
+		<Label text="Conflit"/>
+	</top>
+    <center>
+    	<Label text="Quelqu'un a modifie ce domaine en meme temps que vous.\nConserver vos modifications ?"/>
+    </center>
+    <bottom>
+    	<HBox spacing="10">
+    		<children>
+                <Button text="Oui" onAction="#acceptClient"/>
+                <Button text="Non" onAction="#acceptServer"/>
+    		</children>
+    	</HBox>
+    </bottom>
+</BorderPane>

@@ -56,6 +56,11 @@
         private function loginFault(event:TideFaultEvent):void {
         	message = event.fault.faultString;
         }
+		
+		[Observer("org.granite.tide.sessionExpired")]
+		public function sessionExpired():void {
+			message = "Session expired";
+		}
     ]]>
     </fx:Script>
 

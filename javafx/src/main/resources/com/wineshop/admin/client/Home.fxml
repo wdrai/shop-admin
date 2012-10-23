@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?language javascript?>
+<?import java.lang.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane id="BorderPane" prefHeight="500" prefWidth="700" xmlns:fx="http://javafx.com/fxml" fx:controller="com.wineshop.admin.client.Home">
+	<top>
+		<BorderPane id="AppBar">
+			<left>
+				<Label text="JavaFX GraniteDS Example"/>
+			</left>
+			<right>
+				<HBox spacing="10">
+					<children>
+						<Label text="Connected" visible="${serverSession.status.connected}"/>
+						<Label text="Busy" visible="${serverSession.status.busy}"/>
+						<Button text="Logout" onAction="#logout"/>
+					</children>
+				</HBox>
+			</right>
+		</BorderPane>
+	</top>
+    <center>
+    	<HBox spacing="10">
+    		<children>
+    			<VBox spacing="10">
+    				<children>
+				        <!-- Search Bar -->
+				        <HBox spacing="10">
+				            <children>
+				                <TextField fx:id="textSearch" prefColumnCount="20" onAction="#search"/>
+				                <Button text="Search" onAction="#search"/>
+				            </children>
+				        </HBox>
+				        
+				        <TableView fx:id="listVineyards" id="listVineyards" layoutX="10" layoutY="40" items="$vineyards">
+				        	<columns>
+				        		<TableColumn fx:id="columnName" id="columnName" text="Name" sortable="true"/> 
+				        	</columns>
+				        </TableView>
+				  	</children>
+				</VBox>
+				
+				<VBox spacing="10">
+					<children>
+						<Label fx:id="labelForm" text="Create vineyard"/>
+						<GridPane fx:id="formVineyard" hgap="4" vgap="4">
+							<children>
+								<Label text="Name" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+								<TextField fx:id="textName" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+								
+								<Label text="Address" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+								<TextField fx:id="textAddress" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+								
+								<Label text="Wines" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+								<HBox spacing="5" GridPane.columnIndex="2" GridPane.rowIndex="3">
+									<children>
+										<ListView id="listWines" maxHeight="150" fx:id="listWines"/>
+										
+										<VBox spacing="5">
+											<children>
+												<Button text="+" onAction="#addWine"/>
+												<Button text="-" onAction="#removeWine"/>
+											</children>
+										</VBox>
+									</children>
+								</HBox>
+							</children>
+						</GridPane>
+				        <!-- Search Bar -->
+				        <HBox spacing="10">
+				            <children>
+				                <Button fx:id="saveButton" text="Save" onAction="#save"/>
+								<Button fx:id="deleteButton" text="Delete" onAction="#delete"/>
+								<Button fx:id="cancelButton" text="Cancel" onAction="#cancel"/>
+				            </children>
+				        </HBox>
+					</children>
+				</VBox>
+			</children>
+		</HBox>
+    </center>
+</BorderPane>
